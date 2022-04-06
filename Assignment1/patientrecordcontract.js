@@ -75,18 +75,19 @@ class PatientRecordContract extends Contract {
      * @param {String} gender  gender
      * @param {String} blood_type blood type
      */
-    async createPatientRecord(ctx,username,name,dob,gender,blood_type){
-        let precord = PatientRecord.createInstance(username,name,dob,gender,blood_type);
+    async createPatientRecord(ctx, username, name, dob, gender, blood_type){
+        let precord = PatientRecord.createInstance(username, name, dob, gender, blood_type);
         //TASK 0
         // Add patient record by calling the method in the PRecordList
-        throw new Error()
+        await ctx.patientRecordList.addPRecord(precord);
         return precord.toBuffer();
     }
 
     async getPatientByKey(ctx, username, name){
         let precordKey = PatientRecord.makeKey([username,name]);
         //TASK-1: Use a method from patientRecordList to read a record by key
-        return JSON.stringify(precord)
+        let precord = await ctx.patientRecordList.getPRecord(precordKey);
+        return JSON.stringify(precord);
     }
 
 
@@ -97,13 +98,16 @@ class PatientRecordContract extends Contract {
      * @param {String} name name
      * @param {String} lastCheckupDate date string 
      */
-    /*async updateCheckupDate(ctx,username,name,lastCheckupDate){
+    async updateCheckupDate(ctx, username, name, lastCheckupDate){
         let precordKey = PatientRecord.makeKey([username,name]);
         //TASK-3: Use a method from patientRecordList to read a record by key
         //Use set_last_checkup_date from PatientRecord to update the last_checkup_date field
         //Use updatePRecord from patientRecordList to update the record on the ledger
-       return precord.toBuffer();
-    }*/
+        let precord = await ctx.patientRecordList.getPRecord(precordKey);
+        precord.setLastCheckupDate(lastCheckupDate);
+        await ctx.patientRecordList.updatePRecord(precord);
+        return precord.toBuffer();
+    }
 
 
 
