@@ -51,7 +51,22 @@ class PatientRecordContract extends Contract {
     //  Read more about unknownTransaction here: https://hyperledger.github.io/fabric-chaincode-node/master/api/fabric-contract-api.Contract.html
     async unknownTransaction(ctx){
         // GRADED FUNCTION
-        throw new Error()
+        let func_and_params = ctx.stub.getFunctionAndParameters();
+        if(func_and_params['fcn'] === null || func_and_params['fcn'] === "") {
+            throw new Error("Function Name Missing.");
+        }
+        let functions = [
+            "createPatientRecord",
+            "getPatientByKey",
+            "updateCheckupDate",
+            "queryWithQueryString",
+            "queryByGender",
+            "queryByBlood_Type",
+            "queryByBlood_Type_Dual"
+        ];
+        if(functions.indexOf(func_and_params['fcn']) === -1) {
+            throw new Error("Function Name Missing.");
+        }
     }
 
      async afterTransaction(ctx){
@@ -168,9 +183,14 @@ class PatientRecordContract extends Contract {
         //      TASK-4: Complete the query String JSON object to query using the genderIndex (META-INF folder)
         //      Construct the JSON couch DB selector queryString that uses genderIndex
         //      Pass the Query string built to queryWithQueryString
-        let queryString = {};
-        queryString.selector = {};
-        queryString.selector.gender = gender;
+        let queryString = {
+            use_index: ["_design/genderIndexDoc", "genderIndex"],
+            selector: {
+                gender: gender,
+            }
+        };
+        // queryString.selector = {};
+        // queryString.selector.gender = gender;
         let queryResults = await this.queryWithQueryString(ctx, JSON.stringify(queryString));
         return queryResults;
     }
@@ -187,9 +207,14 @@ class PatientRecordContract extends Contract {
         //      to query by bloodType
         //      Construct the JSON couch DB selector queryString that uses blood_typeIndex
         //      Pass the Query string built to queryWithQueryString
-        let queryString = {};
-        queryString.selector = {};
-        queryString.selector.blood_type = blood_type;
+        let queryString = {
+            use_index: ["_design/blood_typeIndexDoc", "blood_typeIndex"],
+            selector: {
+                blood_type: blood_type,
+            }
+        };
+        // queryString.selector = {};
+        // queryString.selector.blood_type = blood_type;
         let queryResults = await this.queryWithQueryString(ctx, JSON.stringify(queryString));
         return queryResults;
     }
@@ -201,14 +226,24 @@ class PatientRecordContract extends Contract {
      * @param {String} blood_type blood_type to queried
     */
     //Grade Function
-  /* async queryByBlood_Type_Dual(ctx, blood_type1, blood_type2) {
-    //      TASK-6: Write a CouchDB selector query that queries using two blood types
-    //      and uses the index created for bloodType
-    //      Construct the JSON couch DB selector queryString that uses two blood type indexe
-    //      Pass the Query string built to queryWithQueryString
-
-
-}*/
+   async queryByBlood_Type_Dual(ctx, blood_type1, blood_type2) {
+        //      TASK-6: Write a CouchDB selector query that queries using two blood types
+        //      and uses the index created for bloodType
+        //      Construct the JSON couch DB selector queryString that uses two blood type indexe
+        //      Pass the Query string built to queryWithQueryString
+        let queryString = {
+            use_index: ["_design/blood_typeIndexDoc", "blood_typeIndex"],
+            selector: {
+                blood_type: {
+                    "$in": [blood_type1, blood_type2],
+                },
+            }
+        };
+        // queryString.selector = {};
+        // queryString.selector.blood_type = blood_type;
+        let queryResults = await this.queryWithQueryString(ctx, JSON.stringify(queryString));
+        return queryResults;
+    }
 
 }
 
